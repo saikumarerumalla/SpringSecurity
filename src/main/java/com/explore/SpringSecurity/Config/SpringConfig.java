@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +26,9 @@ public class SpringConfig {
 
     @Autowired
     public UserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtFilter jwtFilter;
 
     // adding only this single bean will disable the security as there are no filters added
 //    @Bean
@@ -41,11 +45,11 @@ public class SpringConfig {
                 .requestMatchers("register", "login")   //skip authorization for these endpoints
                 .permitAll()
                 .anyRequest().authenticated());
-        http.formLogin(Customizer.withDefaults()); //for UI
+//        http.formLogin(Customizer.withDefaults()); //for UI
         http.httpBasic(Customizer.withDefaults()); //for Postman
         http.sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         //making the session stateless, will not work with the login form as it will redirect to the login form again, if you it to work with UI also then comment the formlogin
-
+        http.addFilterBefore( jwtFilter , UsernamePasswordAuthenticationFilter.class); //Ads JWT filter before the userpaswordauthentication filter
         return http.build();
     }
 
